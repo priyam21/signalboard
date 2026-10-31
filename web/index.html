@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Signalboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f3efe6;
+    --ink: #1c1915;
+    --muted: #5e584e;
+    --line: #ddd4c4;
+    --card: #fffdf8;
+    --rust: #9a3412;
+    --now: #9f1239;
+    --month: #92400e;
+    --nurture: #3f6212;
+    --chip: #efe8db;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "IBM Plex Sans", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 400px at 10% -10%, #efe2cf 0%, transparent 50%),
+      var(--paper);
+  }
+  header {
+    display: flex; justify-content: space-between; gap: 24px; align-items: flex-end;
+    padding: 22px 28px 12px;
+  }
+  h1 {
+    font-family: Fraunces, serif; font-weight: 560; font-size: 34px;
+    margin: 0; letter-spacing: -0.03em;
+  }
+  header p { margin: 4px 0 0; color: var(--muted); max-width: 640px; }
+  .meta-line { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); text-align: right; }
+  .stats { display: flex; gap: 10px; padding: 0 28px 12px; flex-wrap: wrap; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 8px 12px; min-width: 120px;
+  }
+  .stat b { display: block; font-family: Fraunces, serif; font-size: 22px; font-weight: 560; }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr); gap: 14px; padding: 0 28px 28px; height: calc(100% - 168px); }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; min-height: 0; display: flex; flex-direction: column; }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; border-bottom: 1px solid var(--line); align-items: center; }
+  input, select, button {
+    font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 10px;
+  }
+  input[type="search"] { min-width: 220px; flex: 1; }
+  button { cursor: pointer; background: var(--ink); color: #f6f1e7; border-color: var(--ink); }
+  button.ghost { background: transparent; color: var(--ink); }
+  .chips { display: flex; gap: 6px; }
+  .chips button[aria-pressed="true"] { background: var(--rust); border-color: var(--rust); color: white; }
+  .list { overflow: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; position: sticky; top: 0; background: var(--card); }
+  td { padding: 10px; border-top: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  tr { cursor: pointer; }
+  tr:hover, tr.active { background: #faf6ee; }
+  .prio { font-family: Fraunces, serif; font-size: 22px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; }
+  .badge.now { color: var(--now); background: #ffe4e6; }
+  .badge.month { color: var(--month); background: #ffedd5; }
+  .badge.nurture { color: var(--nurture); background: #ecfccb; }
+  .sub { color: var(--muted); font-size: 12px; }
+  .pager { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; }
+  .detail { overflow: auto; padding: 16px 18px 24px; }
+  .detail h2 { font-family: Fraunces, serif; font-weight: 560; margin: 0 0 4px; font-size: 28px; }
+  .brief { background: #1c1915; color: #f6f1e7; border-radius: 12px; padding: 14px 16px; line-height: 1.45; }
+  .bars { display: grid; gap: 6px; margin: 14px 0; }
+  .bar { display: grid; grid-template-columns: 140px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; }
+  .bar i { display: block; height: 8px; background: var(--chip); border-radius: 99px; }
+  .bar i span { display: block; height: 8px; background: var(--rust); border-radius: 99px; }
+  .finding { border-top: 1px solid var(--line); padding: 12px 0; }
+  .finding h3 { margin: 0 0 4px; font-size: 15px; }
+  .mono { font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+  .empty { color: var(--muted); padding: 28px 8px; }
+  .method { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .method summary { cursor: pointer; color: var(--ink); font-weight: 600; }
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; height: auto; }
+    header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Signalboard</h1>
+    <p>Who needs a cybersecurity conversation this week, based on confirmed exposure. Not a count of open ports.</p>
+  </div>
+  <div class="meta-line" id="meta">Loading the mart…</div>
+</header>
+<section class="stats" id="stats"></section>
+<main class="layout">
+  <section class="panel">
+    <div class="filters">
+      <input id="q" type="search" placeholder="Search domain, network, CVE…" />
+      <div class="chips" id="queues">
+        <button class="ghost" data-queue="" aria-pressed="true">All</button>
+        <button class="ghost" data-queue="now">Now</button>
+        <button class="ghost" data-queue="month">This month</button>
+        <button class="ghost" data-queue="nurture">Nurture</button>
+      </div>
+      <select id="kind">
+        <option value="domain">Named domain</option>
+        <option value="">Any attribution</option>
+        <option value="org">Network owner</option>
+        <option value="ip">IP only</option>
+      </select>
+      <select id="country"><option value="">Any country</option></select>
+      <select id="klass"><option value="">Any signal</option></select>
+      <button id="export" class="ghost" type="button">Export CSV</button>
+    </div>
+    <div class="list">
+      <table>
+        <thead>
+          <tr><th>Pri</th><th>Account</th><th>Why it is on the list</th><th>IPs</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span id="pageinfo"></span>
+      <span>
+        <button id="prev" class="ghost" type="button">Prev</button>
+        <button id="next" class="ghost" type="button">Next</button>
+      </span>
+    </div>
+  </section>
+  <section class="panel detail" id="detail">
+    <div class="empty">Select an account. The note on the right is filled only from scanner evidence, so it cannot invent a CVE.</div>
+  </section>
+</main>
+<script>
+const state = { page: 1, pageSize: 40, queue: "", total: 0, selected: null, classLabels: {} };
+
+function qs() {
+  const p = new URLSearchParams();
+  const q = document.getElementById("q").value.trim();
+  if (q) p.set("q", q);
+  if (state.queue) p.set("queue", state.queue);
+  const kind = document.getElementById("kind").value;
+  const country = document.getElementById("country").value;
+  const klass = document.getElementById("klass").value;
+  if (kind) p.set("kind", kind);
+  if (country) p.set("country", country);
+  if (klass) p.set("klass", klass);
+  p.set("page", state.page);
+  p.set("page_size", state.pageSize);
+  return p;
+}
+
+function badge(queue) {
+  const label = queue === "now" ? "Now" : queue === "month" ? "This month" : "Nurture";
+  return `<span class="badge ${queue}">${label}</span>`;
+}
+
+function kindLabel(kind) {
+  return kind === "domain" ? "Named domain" : kind === "org" ? "Network owner" : "IP only";
+}
+
+async function loadStats() {
+  const data = await fetch("/api/stats").then(r => r.json());
+  const m = data.meta || {};
+  const files = (m.files || []).map(f => f.name).join(", ") || "mart";
+  const rate = m.banners_per_sec ? `${Math.round(m.banners_per_sec).toLocaleString()} banners/s` : "";
+  document.getElementById("meta").textContent =
+    `${(m.records || 0).toLocaleString()} banners · ${files} · ${m.generated_at || ""} · ${rate}`;
+  const c = data.counts || {};
+  const q = c.by_queue || {};
+  const rejected = (m.stats || {});
+  document.getElementById("stats").innerHTML = [
+    ["Accounts", c.accounts || 0],
+    ["Call now", q.now || 0],
+    ["This month", q.month || 0],
+    ["Honeypots dropped", rejected.honeypot || 0],
+    ["Unverified CVEs ignored", rejected.unverified_cves || 0],
+  ].map(([label, n]) => `<div class="stat"><b>${Number(n).toLocaleString()}</b><span>${label}</span></div>`).join("");
+  const country = document.getElementById("country");
+  const current = country.value;
+  country.innerHTML = `<option value="">Any country</option>` + (data.countries || [])
+    .map(row => `<option value="${row.country}">${row.country} (${row.n.toLocaleString()})</option>`).join("");
+  country.value = current;
+  state.classLabels = data.classes || {};
+  const klass = document.getElementById("klass");
+  const klassCurrent = klass.value;
+  klass.innerHTML = `<option value="">Any signal</option>` + Object.entries(state.classLabels)
+    .map(([key, label]) => `<option value="${key}">${label}</option>`).join("");
+  klass.value = klassCurrent;
+}
+
+async function loadAccounts() {
+  const data = await fetch("/api/accounts?" + qs().toString()).then(r => r.json());
+  state.total = data.total;
+  const body = document.getElementById("rows");
+  body.innerHTML = data.accounts.map(a => `
+    <tr data-key="${encodeURIComponent(a.account_key)}" class="${state.selected === a.account_key ? "active" : ""}">
+      <td><div class="prio">${a.priority}</div>${badge(a.queue)}</td>
+      <td><strong>${escapeHtml(a.name)}</strong><div class="sub">${kindLabel(a.kind)}${a.country ? " · " + a.country : ""}${a.org_hint ? " · " + escapeHtml(a.org_hint) : ""}</div></td>
+      <td>${escapeHtml(a.why_now)}<div class="sub">${(a.class_labels || []).join(" · ")}</div></td>
+      <td class="mono">${a.ip_count}</td>
+    </tr>`).join("") || `<tr><td colspan="4" class="empty">Nothing matches. Confirmed exposures only, so a quiet filter is expected.</td></tr>`;
+  const pages = Math.max(1, Math.ceil(state.total / state.pageSize));
+  document.getElementById("pageinfo").textContent = `${state.total.toLocaleString()} accounts · page ${state.page} of ${pages}`;
+  body.querySelectorAll("tr[data-key]").forEach(tr => {
+    tr.onclick = () => openAccount(decodeURIComponent(tr.dataset.key));
+  });
+}
+
+async function openAccount(key) {
+  state.selected = key;
+  const a = await fetch("/api/account?key=" + encodeURIComponent(key)).then(r => r.json());
+  const by = (a.breakdown && a.breakdown.by_class) || {};
+  const bars = Object.entries(by).sort((x, y) => y[1] - x[1]).map(([k, v]) => `
+    <div class="bar"><span>${state.classLabels[k] || k}</span><i><span style="width:${Math.min(100, v)}%"></span></i><b>${v}</b></div>`).join("");
+  const findings = (a.findings || []).map(f => `
+    <article class="finding">
+      <h3>${escapeHtml(f.title)} <span class="badge month">${f.points} pts</span></h3>
+      <div class="mono">${escapeHtml(f.ip || "")}:${f.port ?? ""} ${f.cve ? "· " + f.cve : ""} ${f.cvss ? "· CVSS " + f.cvss : ""} ${f.epss ? "· EPSS " + Number(f.epss).toFixed(3) : ""}</div>
+      <p>${escapeHtml(f.detail || "")}</p>
+      <p class="sub">${escapeHtml(f.evidence || "")}</p>
+    </article>`).join("");
+  document.getElementById("detail").innerHTML = `
+    <div class="sub">${kindLabel(a.kind)} · priority ${a.priority} · pain ${a.pain} · urgency ${a.urgency} + breadth ${a.breadth}</div>
+    <h2>${escapeHtml(a.name)}</h2>
+    <p class="sub">${a.domain ? escapeHtml(a.domain) + " · " : ""}${a.country || "country unknown"}${a.org_hint ? " · network " + escapeHtml(a.org_hint) : ""}${a.asn ? " · " + escapeHtml(a.asn) : ""}</p>
+    <div class="brief">${escapeHtml(a.call_brief)}</div>
+    <div class="bars">${bars}</div>
+    <h3>Evidence</h3>
+    ${findings}
+    <details class="method">
+      <summary>How this number was built</summary>
+      <p>Priority is the worst confirmed issue (urgency) plus 8 points for each extra kind of problem, capped at 24. It is not a count of banners. Unverified CVEs, honeypots, CDN challenge pages, and malware-module probes that came back as ordinary HTTP are not in the score. Certificate findings are kept only when a real domain was on the banner. Network-owner rows have no customer hostname, so confirm the org before you write.</p>
+    </details>`;
+  document.querySelectorAll("#rows tr").forEach(tr => {
+    tr.classList.toggle("active", decodeURIComponent(tr.dataset.key || "") === key);
+  });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+document.getElementById("queues").onclick = (event) => {
+  const btn = event.target.closest("button");
+  if (!btn) return;
+  state.queue = btn.dataset.queue;
+  state.page = 1;
+  document.querySelectorAll("#queues button").forEach(b => b.setAttribute("aria-pressed", b === btn ? "true" : "false"));
+  loadAccounts();
+};
+["kind", "country", "klass"].forEach(id => {
+  document.getElementById(id).onchange = () => { state.page = 1; loadAccounts(); };
+});
+let timer = 0;
+document.getElementById("q").oninput = () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => { state.page = 1; loadAccounts(); }, 200);
+};
+document.getElementById("prev").onclick = () => { if (state.page > 1) { state.page--; loadAccounts(); } };
+document.getElementById("next").onclick = () => {
+  if (state.page * state.pageSize < state.total) { state.page++; loadAccounts(); }
+};
+document.getElementById("export").onclick = () => {
+  const p = qs();
+  p.delete("page");
+  p.delete("page_size");
+  window.location = "/api/export.csv?" + p.toString();
+};
+
+loadStats().then(loadAccounts);
+</script>
+</body>
+</html>

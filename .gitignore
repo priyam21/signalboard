@@ -1,0 +1,11 @@
+.venv/
+bin/
+__pycache__/
+*.pyc
+.DS_Store
+data/*.sqlite
+data/*.sqlite-journal
+data/*.sqlite-wal
+data/*.sqlite-shm
+data/ingest.log
+.pytest_cache/
