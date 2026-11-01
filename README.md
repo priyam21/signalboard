@@ -83,9 +83,13 @@ python -m salesintel.ingest \
   --out data/signalboard.sqlite
 
 python -m salesintel.app --db data/signalboard.sqlite --port 8765
+
+python -m salesintel.report \
+  --db data/signalboard.sqlite \
+  --out report/signalboard.html
 ```
 
-`--limit 200000` is a fast sample of the front of the file. The desk is http://127.0.0.1:8765.
+`--limit 200000` is a fast sample of the front of the file. The desk is http://127.0.0.1:8765. The HTML file is the same desk with every account, filter, and finding, and it opens without the server. It is generated, not committed: the file is about 67 MB.
 
 ## Measured on this file
 
